@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: releases
+    // Document ID: {releaseId}
+    // Fields:
+    //   - title: string (required)
+    //   - artist: string (required)
+    //   - genre: string
+    //   - releaseDate: string (ISO date)
+    //   - upc: string
+    //   - artworkUrl: string
+    //   - tracks: list (objects with title, fileUrl)
+    //   - platforms: list (strings)
+    //   - status: string (draft, submitted, processing, distributed)
+    //   - userId: string (required, owner)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - displayName: string
+    //   - email: string (required)
+    //   - photoURL: string
+    //   - role: string (user, admin)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidRelease(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.artist is string && data.artist.size() > 0 && data.artist.size() < 200 &&
+             data.userId == request.auth.uid &&
+             data.status in ['draft', 'submitted', 'processing', 'distributed'];
+    }
+
+    function isValidUser(data) {
+      return data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "griffinhenry668@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) && isValidUser(request.resource.data) && 
+        (request.resource.data.role == 'user' || isAdmin());
+    }
+
+    match /releases/{releaseId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidRelease(request.resource.data);
+      allow update: if (isDocOwner() || isAdmin()) && isValidRelease(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+  }
+}

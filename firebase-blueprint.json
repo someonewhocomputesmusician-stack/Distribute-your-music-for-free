@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Release": {
+      "title": "Release",
+      "description": "A music release containing metadata, tracks, and distribution info.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the release" },
+        "artist": { "type": "string", "description": "The primary artist" },
+        "genre": { "type": "string", "description": "The music genre" },
+        "releaseDate": { "type": "string", "format": "date", "description": "Planned release date" },
+        "upc": { "type": "string", "description": "Universal Product Code (optional)" },
+        "artworkUrl": { "type": "string", "description": "URL to the artwork image" },
+        "tracks": {
+          "type": "array",
+          "description": "List of tracks in the release"
+        },
+        "platforms": {
+          "type": "array",
+          "description": "Selected platforms for distribution"
+        },
+        "status": { "type": "string", "enum": ["draft", "submitted", "processing", "distributed"], "description": "Current status of the release" },
+        "userId": { "type": "string", "description": "The owner of the release" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "artist", "userId", "status"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User account information",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/releases/{releaseId}": {
+      "schema": "Release",
+      "description": "Collection of music releases"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data"
+    }
+  }
+}
