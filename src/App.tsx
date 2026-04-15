@@ -487,7 +487,7 @@ export default function App() {
                       <div className="space-y-6">
                         <input 
                           type="file" 
-                          accept="image/*" 
+                          accept="*/*" 
                           className="hidden" 
                           ref={artworkInputRef}
                           onChange={handleArtworkUpload}
@@ -508,7 +508,7 @@ export default function App() {
                               <div className="text-[11px] font-bold uppercase tracking-wider">
                                 {uploading.artwork ? 'Uploading...' : 'Cover Artwork'}
                               </div>
-                              <div className="text-[10px] text-text-dim mt-1">3000x3000px JPG/PNG</div>
+                              <div className="text-[10px] text-text-dim mt-1 text-center">Any image format supported</div>
                             </div>
                           )}
                         </div>
@@ -535,7 +535,7 @@ export default function App() {
                                     />
                                     <input 
                                       type="file" 
-                                      accept="audio/*" 
+                                      accept="*/*" 
                                       className="hidden" 
                                       ref={el => trackInputRefs.current[track.id] = el}
                                       onChange={(e) => handleTrackFileUpload(track.id, e)}
